@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Planner — Shamsudeen EP</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- SheetJS for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg:          #f0f4f8;
+  --bg2:         #e4ecf5;
+  --card:        #ffffff;
+  --card2:       #f8fafc;
+  --border:      #d1dce9;
+  --border2:     #e2eaf4;
+  --ink:         #1a2540;
+  --ink2:        #3d5170;
+  --muted:       #7a90b0;
+  --green:       #0ea472;
+  --green-bg:    #e6f7f1;
+  --green-bd:    #b2e6d4;
+  --red:         #e03d3d;
+  --red-bg:      #fdeaea;
+  --red-bd:      #f5b8b8;
+  --blue:        #2b6cb0;
+  --blue-bg:     #ebf4ff;
+  --blue-bd:     #bee3f8;
+  --amber:       #b45309;
+  --amber-bg:    #fffbeb;
+  --amber-bd:    #fde68a;
+  --accent:      #2b6cb0;
+  --shadow-sm:   0 1px 3px rgba(30,60,110,0.08), 0 1px 2px rgba(30,60,110,0.06);
+  --shadow-md:   0 4px 16px rgba(30,60,110,0.10), 0 2px 6px rgba(30,60,110,0.07);
+  --shadow-lg:   0 10px 40px rgba(30,60,110,0.12), 0 4px 12px rgba(30,60,110,0.08);
+  --radius:      16px;
+  --radius-sm:   10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── Background Pattern ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(43,108,176,0.07) 0%, transparent 50%),
+    radial-gradient(circle at 85% 75%, rgba(14,164,114,0.06) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232b6cb0' fill-opacity='0.025'%3E%3Ccircle cx='30' cy='30' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.wrap { position: relative; z-index: 1; max-width: 1320px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+
+/* ── Header ── */
+.site-header {
+  text-align: center;
+  padding: 3rem 1rem 2.5rem;
+  position: relative;
+}
+
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--blue-bg);
+  border: 1px solid var(--blue-bd);
+  color: var(--blue);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.9rem;
+  border-radius: 99px;
+  margin-bottom: 1rem;
+}
+
+.header-badge::before { content: '₹'; font-size: 0.85rem; }
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.6rem;
+}
+
+h1 span { color: var(--accent); }
+
+.header-sub {
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 500;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ── Year Tabs ── */
+.tabs-scroll {
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.tabs-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  min-width: max-content;
+  padding: 0.25rem 0;
+}
+
+.year-tab {
+  min-width: 130px;
+  padding: 0.75rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: center;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.year-tab:hover:not(.active) {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.year-tab.active {
+  border-color: var(--accent);
+  background: var(--blue-bg);
+  color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(43,108,176,0.12);
+}
+
+.tab-top { display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+
+.tab-delete {
+  opacity: 0;
+  color: var(--red);
+  cursor: pointer;
+  font-size: 0.7rem;
+  transition: opacity 0.15s;
+  line-height: 1;
+  padding: 1px 3px;
+  border-radius: 4px;
+}
+.year-tab:hover .tab-delete { opacity: 1; }
+
+.tab-balance {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  font-weight: 600;
+  font-family: 'Nunito', sans-serif;
+}
+
+.btn-add-year {
+  min-width: 120px;
+  padding: 0.75rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 2px dashed var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.2s;
+  white-space: nowrap;
+  align-self: stretch;
+}
+.btn-add-year:hover { border-color: var(--accent); color: var(--accent); background: var(--blue-bg); }
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.toolbar-label { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.tb-input {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  color: var(--ink);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.tb-input:focus { border-color: var(--accent); }
+
+.tb-select {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  color: var(--ink);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.tb-sep { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.17s;
+  white-space: nowrap;
+}
+
+.tb-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.btn-copy-y { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-bd); }
+.btn-copy-y:hover { background: #dbeafe; }
+
+.btn-excel { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+.btn-excel:hover { background: #dcfce7; }
+
+.btn-pdf { background: var(--red-bg); color: var(--red); border-color: var(--red-bd); }
+.btn-pdf:hover { background: #fecaca; }
+
+.btn-clear { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-bd); }
+.btn-clear:hover { background: #fef3c7; }
+
+/* ── Summary Cards ── */
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 600px) { .summary-row { grid-template-columns: 1fr; } }
+
+.sum-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.sum-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.sum-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-radius: 4px 4px 0 0;
+}
+
+.sum-card.income::after { background: linear-gradient(90deg, #0ea472, #34d399); }
+.sum-card.expense::after { background: linear-gradient(90deg, #e03d3d, #f87171); }
+.sum-card.balance::after { background: linear-gradient(90deg, #2b6cb0, #60a5fa); }
+
+.sum-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  margin-bottom: 0.9rem;
+}
+.income .sum-icon  { background: var(--green-bg); }
+.expense .sum-icon { background: var(--red-bg); }
+.balance .sum-icon { background: var(--blue-bg); }
+
+.sum-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.3rem; }
+
+.sum-value {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.income  .sum-value { color: var(--green); }
+.expense .sum-value { color: var(--red); }
+
+/* ── Main Panels ── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 780px) { .main-grid { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem; padding-bottom: 1rem;
+  border-bottom: 1.5px solid var(--border2);
+}
+
+.panel-title {
+  display: flex; align-items: center; gap: 0.6rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem; font-weight: 700; color: var(--ink);
+}
+
+.pill {
+  display: inline-flex; align-items: center;
+  padding: 0.2rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.8rem; font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+}
+
+.pill-income  { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-bd); }
+.pill-expense { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-bd); }
+
+/* Entries list */
+.entries {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  margin-bottom: 1rem;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+.entries::-webkit-scrollbar { width: 4px; }
+.entries::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.entry-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.5rem; align-items: center;
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  animation: popIn 0.18s ease;
+  transition: box-shadow 0.15s;
+}
+.entry-row:hover { box-shadow: var(--shadow-sm); }
+
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+.entry-name { font-size: 0.9rem; font-weight: 600; color: var(--ink2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.entry-amt {
+  font-size: 0.9rem; font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  white-space: nowrap;
+}
+.amt-inc { color: var(--green); }
+.amt-exp { color: var(--red); }
+
+.btn-del {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 1.1rem; line-height: 1;
+  padding: 0 0.2rem; transition: color 0.15s;
+  display: flex; align-items: center;
+}
+.btn-del:hover { color: var(--red); }
+
+.empty-hint {
+  text-align: center; padding: 1.5rem 1rem;
+  color: var(--muted); font-size: 0.85rem; font-style: italic;
+}
+
+/* Add form */
+.add-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; }
+
+.af-input {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  color: var(--ink); font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem; font-weight: 600;
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+.af-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+.af-input::placeholder { color: var(--muted); font-weight: 500; }
+
+.af-btn {
+  padding: 0.6rem 1rem;
+  border-radius: 10px; border: none;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem; font-weight: 800;
+  transition: all 0.15s; white-space: nowrap;
+}
+.af-inc { background: var(--green); color: #fff; }
+.af-inc:hover { background: #0b9065; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(14,164,114,0.3); }
+.af-exp { background: var(--red); color: #fff; }
+.af-exp:hover { background: #c73333; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(224,61,61,0.3); }
+
+/* ── Overview ── */
+.overview-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem;
+}
+
+.ov-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+
+.ov-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 700; color: var(--ink);
+}
+
+/* Chart */
+.chart-wrap {
+  display: flex; align-items: flex-end; gap: 0.75rem;
+  height: 200px; overflow-x: auto; padding-bottom: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.cg { flex-shrink: 0; min-width: 60px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+
+.cbars { display: flex; gap: 4px; align-items: flex-end; width: 100%; height: 170px; }
+.cbw   { flex: 1; display: flex; align-items: flex-end; height: 100%; }
+.cb    { width: 100%; border-radius: 6px 6px 0 0; min-height: 3px; transition: height 0.4s cubic-bezier(.4,0,.2,1); }
+
+.cy-lbl { font-size: 0.68rem; font-weight: 700; color: var(--muted); margin-top: 0.4rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+
+.chart-legend { display: flex; gap: 1.25rem; justify-content: center; margin-bottom: 1.5rem; }
+.cl-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 600; color: var(--ink2); }
+.cl-dot  { width: 11px; height: 11px; border-radius: 3px; }
+
+/* Table */
+.ov-table { width: 100%; border-collapse: collapse; }
+.ov-table th {
+  text-align: left; padding: 0.6rem 1rem;
+  font-size: 0.75rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--muted); background: var(--bg);
+  border-bottom: 2px solid var(--border);
+}
+.ov-table th:first-child { border-radius: 8px 0 0 8px; }
+.ov-table th:last-child  { border-radius: 0 8px 8px 0; }
+
+.ov-table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem; font-weight: 600;
+  border-bottom: 1px solid var(--border2);
+}
+.ov-table td:first-child { font-weight: 700; }
+.ov-table tbody tr:hover td { background: var(--bg); }
+
+.ov-foot td {
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem; font-weight: 800;
+  background: var(--bg2);
+  border-top: 2px solid var(--border);
+  border-bottom: none !important;
+}
+.ov-foot td:first-child { border-radius: 8px 0 0 8px; }
+.ov-foot td:last-child  { border-radius: 0 8px 8px 0; }
+
+.bar-track { width: 100%; height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+.bar-fill  { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 2.5rem 1rem 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-inner {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.footer-logo span { color: var(--accent); }
+
+.footer-credit {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.footer-credit strong {
+  color: var(--ink2);
+  font-weight: 800;
+}
+
+.footer-divider {
+  width: 40px; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  border-radius: 2px;
+  margin: 0.3rem 0;
+}
+
+/* ── Modal / confirm ── */
+.modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(15,25,50,0.45);
+  backdrop-filter: blur(3px);
+  z-index: 9000;
+  align-items: center; justify-content: center;
+}
+.modal-bg.open { display: flex; }
+
+.modal {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  width: 340px;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp 0.2s ease;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+.modal h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 0.75rem; }
+.modal p  { font-size: 0.9rem; color: var(--ink2); margin-bottom: 1.25rem; }
+
+.modal-btns { display: flex; gap: 0.6rem; justify-content: flex-end; }
+.mb { padding: 0.5rem 1.2rem; border-radius: 8px; border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+.mb-cancel { background: var(--card2); color: var(--ink2); }
+.mb-cancel:hover { border-color: var(--accent); }
+.mb-confirm { background: var(--red); color: #fff; border-color: var(--red); }
+.mb-confirm:hover { background: #c73333; }
+
+/* ── Responsive tweaks ── */
+@media (max-width: 500px) {
+  .toolbar { flex-direction: column; align-items: flex-start; }
+  .tb-sep { display: none; }
+  .add-form { grid-template-columns: 1fr 1fr; }
+  .add-form .af-btn { grid-column: span 2; }
+  h1 { font-size: 1.9rem; }
+}
+
+/* ── Print / PDF styles ── */
+@media print {
+  body { background: #fff; }
+  body::before, .toolbar, .tabs-scroll, .add-form, .btn-del, .tab-delete { display: none !important; }
+  .panel, .overview-card, .sum-card { box-shadow: none; break-inside: avoid; }
+  .main-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-badge">Indian Rupee · ₹ INR</div>
+    <h1>Financial <span>Planner</span></h1>
+    <p class="header-sub">Track income &amp; expenses across any number of years with full clarity</p>
+  </header>
+
+  <!-- Year Tabs -->
+  <div class="tabs-scroll">
+    <div class="tabs-row" id="yearTabs">
+      <button class="btn-add-year" onclick="addYear()">＋ Add Year</button>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <span class="toolbar-label">Rename</span>
+    <input class="tb-input" id="yearNameInput" type="text" placeholder="Year label" oninput="renameYear(this.value)" style="width:140px;" />
+
+    <div class="tb-sep"></div>
+
+    <span class="toolbar-label">Copy from</span>
+    <select class="tb-select" id="copyFrom"><option value="">— select year —</option></select>
+    <button class="tb-btn btn-copy-y" onclick="copyFromYear()">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.5 1h-7A1.5 1.5 0 002 2.5v9A1.5 1.5 0 003.5 13H4v.5A1.5 1.5 0 005.5 15h7A1.5 1.5 0 0014 13.5v-9A1.5 1.5 0 0012.5 3H12v-.5A1.5 1.5 0 0010.5 1zM3.5 12a.5.5 0 01-.5-.5v-9a.5.5 0 01.5-.5H8v2.5A.5.5 0 008.5 5H11v7a.5.5 0 01-.5.5h-7z"/></svg>
+      Copy
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <button class="tb-btn btn-excel" onclick="exportExcel()">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 0H5a1 1 0 00-1 1v3H1a1 1 0 00-1 1v7a1 1 0 001 1h3v2a1 1 0 001 1h9a1 1 0 001-1V1a1 1 0 00-1-1zM4 11H2V5h2v6zm8.5 2h-8V2h5.5l2.5 2.5V13z"/><path d="M6.5 7.5l1 1.5-1 1.5H8l.6-1 .6 1H10.5l-1-1.5 1-1.5H9.2l-.6 1-.6-1H6.5z"/></svg>
+      Export Excel
+    </button>
+
+    <button class="tb-btn btn-pdf" onclick="exportPDF()">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M9 1H3a1 1 0 00-1 1v12a1 1 0 001 1h10a1 1 0 001-1V5L9 1zm0 1.5L12.5 5H9V2.5zM4.5 8h7v1h-7V8zm0 2.5h7v1h-7v-1zm0-5h3v1h-3V5.5z"/></svg>
+      Export PDF
+    </button>
+
+    <button class="tb-btn btn-clear" onclick="confirmClear()">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M11 1.5A1.5 1.5 0 009.5 0h-3A1.5 1.5 0 005 1.5V2H2v1h1v10.5A1.5 1.5 0 004.5 15h7a1.5 1.5 0 001.5-1.5V3h1V2h-3v-.5zM6 1.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V2H6v-.5zM5 3h6v10.5a.5.5 0 01-.5.5h-5a.5.5 0 01-.5-.5V3zm2 2v7H6V5h1zm3 0v7H9V5h1z"/></svg>
+      Clear Data
+    </button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-row">
+    <div class="sum-card income">
+      <div class="sum-icon">💰</div>
+      <div class="sum-label">Total Income</div>
+      <div class="sum-value" id="sumIncome">₹0</div>
+    </div>
+    <div class="sum-card expense">
+      <div class="sum-icon">💸</div>
+      <div class="sum-label">Total Expenses</div>
+      <div class="sum-value" id="sumExpense">₹0</div>
+    </div>
+    <div class="sum-card balance">
+      <div class="sum-icon">⚖️</div>
+      <div class="sum-label">Net Balance</div>
+      <div class="sum-value" id="sumBalance" style="color:var(--blue)">₹0</div>
+    </div>
+  </div>
+
+  <!-- Income + Expense Panels -->
+  <div class="main-grid" id="mainPanels">
+    <!-- Income -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="#e6f7f1"/><path d="M10 5v10M7 8l3-3 3 3" stroke="#0ea472" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Income
+        </div>
+        <span class="pill pill-income" id="totalIncome">₹0</span>
+      </div>
+      <div class="entries" id="incomeEntries"></div>
+      <div class="add-form">
+        <input class="af-input" id="incomeName"   type="text"   placeholder="Source name" />
+        <input class="af-input" id="incomeAmount" type="number" placeholder="₹ Amount" min="0" step="1" />
+        <button class="af-btn af-inc" onclick="addEntry('income')">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Expense -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="#fdeaea"/><path d="M10 15V5M7 12l3 3 3-3" stroke="#e03d3d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Expenses
+        </div>
+        <span class="pill pill-expense" id="totalExpense">₹0</span>
+      </div>
+      <div class="entries" id="expenseEntries"></div>
+      <div class="add-form">
+        <input class="af-input" id="expenseName"   type="text"   placeholder="Expense name" />
+        <input class="af-input" id="expenseAmount" type="number" placeholder="₹ Amount" min="0" step="1" />
+        <button class="af-btn af-exp" onclick="addEntry('expense')">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overview -->
+  <div class="overview-card" id="overviewCard">
+    <div class="ov-header">
+      <div class="ov-title" id="overviewTitle">All Years Overview</div>
+    </div>
+
+    <div class="chart-wrap" id="chartArea"></div>
+    <div class="chart-legend">
+      <div class="cl-item"><div class="cl-dot" style="background:var(--green)"></div> Income</div>
+      <div class="cl-item"><div class="cl-dot" style="background:var(--red)"></div> Expenses</div>
+    </div>
+
+    <table class="ov-table">
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Income</th>
+          <th>Expenses</th>
+          <th>Balance</th>
+          <th style="min-width:120px">Balance Bar</th>
+        </tr>
+      </thead>
+      <tbody id="overviewBody"></tbody>
+      <tfoot>
+        <tr class="ov-foot">
+          <td id="totalLabel">Total</td>
+          <td id="grandIncome" style="color:var(--green)">₹0</td>
+          <td id="grandExpense" style="color:var(--red)">₹0</td>
+          <td id="grandBalance" style="color:var(--blue)">₹0</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div><!-- /wrap -->
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Financial <span>Planner</span></div>
+    <div class="footer-divider"></div>
+    <div class="footer-credit">Developed &amp; Designed by <strong>Shamsudeen EP</strong></div>
+    <div class="footer-credit" style="font-size:0.75rem; margin-top:0.1rem;">All data is stored locally on your device</div>
+  </div>
+</footer>
+
+<!-- Confirm Modal -->
+<div class="modal-bg" id="clearModal">
+  <div class="modal">
+    <h3>🗑️ Clear All Data?</h3>
+    <p>This will permanently delete <strong>all years, income, and expense data</strong>. This action cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="mb mb-cancel" onclick="closeModal()">Cancel</button>
+      <button class="mb mb-confirm" onclick="clearAllData()">Yes, Clear All</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   COLOUR PALETTE FOR YEARS
+═══════════════════════════════════════════════ */
+const PALETTE = [
+  '#2b6cb0','#0ea472','#d97706','#9333ea','#e03d3d',
+  '#0891b2','#c2410c','#16a34a','#4f46e5','#b45309',
+  '#059669','#7c3aed','#dc2626','#0284c7','#ca8a04'
+];
+const yearColor = i => PALETTE[i % PALETTE.length];
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let S = {
+  activeYear: 0,
+  years: [{ name: 'Year 1', income: [], expenses: [] }]
+};
+
+try {
+  const raw = localStorage.getItem('fp_she_v1');
+  if (raw) {
+    const p = JSON.parse(raw);
+    if (p && Array.isArray(p.years) && p.years.length) {
+      p.years = p.years.map((y, i) => ({
+        name: y.name || `Year ${i+1}`,
+        income:   Array.isArray(y.income)   ? y.income   : [],
+        expenses: Array.isArray(y.expenses) ? y.expenses : []
+      }));
+      S = { activeYear: Math.min(p.activeYear||0, p.years.length-1), years: p.years };
+    }
+  }
+} catch(e) {}
+
+const persist = () => localStorage.setItem('fp_she_v1', JSON.stringify(S));
+
+/* ═══════════════════════════════════════════════
+   FORMAT ₹ INR
+═══════════════════════════════════════════════ */
+const fmt = n => (n < 0 ? '-₹' : '₹') + Math.abs(n).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+
+/* ═══════════════════════════════════════════════
+   TOTALS
+═══════════════════════════════════════════════ */
+const getTotals = y => {
+  const inc = y.income.reduce((s,e)=>s+e.amount,0);
+  const exp = y.expenses.reduce((s,e)=>s+e.amount,0);
+  return { inc, exp, bal: inc - exp };
+};
+
+/* ═══════════════════════════════════════════════
+   YEAR MANAGEMENT
+═══════════════════════════════════════════════ */
+function addYear() {
+  S.years.push({ name: `Year ${S.years.length+1}`, income: [], expenses: [] });
+  S.activeYear = S.years.length - 1;
+  persist(); renderAll();
+}
+
+function deleteYear(idx, ev) {
+  ev.stopPropagation();
+  if (S.years.length === 1) { alert('You need at least one year.'); return; }
+  if (!confirm(`Delete "${S.years[idx].name}" and all its data?`)) return;
+  S.years.splice(idx, 1);
+  if (S.activeYear >= S.years.length) S.activeYear = S.years.length - 1;
+  persist(); renderAll();
+}
+
+function renameYear(val) {
+  S.years[S.activeYear].name = val || `Year ${S.activeYear+1}`;
+  persist(); renderTabs(); renderOverview();
+}
+
+/* ═══════════════════════════════════════════════
+   ENTRIES
+═══════════════════════════════════════════════ */
+function addEntry(type) {
+  const nEl = document.getElementById(type==='income' ? 'incomeName'   : 'expenseName');
+  const aEl = document.getElementById(type==='income' ? 'incomeAmount' : 'expenseAmount');
+  const name   = nEl.value.trim();
+  const amount = parseFloat(aEl.value);
+  if (!name || isNaN(amount) || amount <= 0) {
+    [nEl,aEl].forEach(el => {
+      el.style.outline = '2px solid var(--red)';
+      setTimeout(() => el.style.outline='', 1300);
+    });
+    return;
+  }
+  const yr = S.years[S.activeYear];
+  (type==='income' ? yr.income : yr.expenses).push({ name, amount });
+  nEl.value=''; aEl.value=''; nEl.focus();
+  persist(); renderAll();
+}
+
+function removeEntry(type, idx) {
+  const yr = S.years[S.activeYear];
+  (type==='income' ? yr.income : yr.expenses).splice(idx, 1);
+  persist(); renderAll();
+}
+
+function copyFromYear() {
+  const sel = document.getElementById('copyFrom');
+  const fi = parseInt(sel.value);
+  if (isNaN(fi)) return;
+  const from = S.years[fi], to = S.years[S.activeYear];
+  from.income.forEach(e   => { if (!to.income.find(x=>x.name===e.name))   to.income.push({...e}); });
+  from.expenses.forEach(e => { if (!to.expenses.find(x=>x.name===e.name)) to.expenses.push({...e}); });
+  sel.value=''; persist(); renderAll();
+}
+
+/* ═══════════════════════════════════════════════
+   CLEAR
+═══════════════════════════════════════════════ */
+function confirmClear() { document.getElementById('clearModal').classList.add('open'); }
+function closeModal()   { document.getElementById('clearModal').classList.remove('open'); }
+function clearAllData() {
+  S = { activeYear: 0, years: [{ name: 'Year 1', income: [], expenses: [] }] };
+  persist(); closeModal(); renderAll();
+}
+
+/* ═══════════════════════════════════════════════
+   EXPORT — EXCEL (SheetJS)
+═══════════════════════════════════════════════ */
+function exportExcel() {
+  const wb = XLSX.utils.book_new();
+
+  // Summary sheet
+  const sumRows = [['Year','Income (₹)','Expenses (₹)','Balance (₹)']];
+  S.years.forEach(y => {
+    const { inc, exp, bal } = getTotals(y);
+    sumRows.push([y.name, inc, exp, bal]);
+  });
+  const allInc = S.years.reduce((s,y)=>s+getTotals(y).inc,0);
+  const allExp = S.years.reduce((s,y)=>s+getTotals(y).exp,0);
+  sumRows.push(['TOTAL', allInc, allExp, allInc-allExp]);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sumRows), 'Summary');
+
+  // Individual year sheets
+  S.years.forEach(y => {
+    const rows = [['Type','Name','Amount (₹)']];
+    y.income.forEach(e   => rows.push(['Income',   e.name, e.amount]));
+    y.expenses.forEach(e => rows.push(['Expense',  e.name, e.amount]));
+    const name = y.name.replace(/[^a-zA-Z0-9 ]/g,'').substring(0,30) || 'Year';
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), name);
+  });
+
+  XLSX.writeFile(wb, 'Financial_Planner_Shamsudeen_EP.xlsx');
+}
+
+/* ═══════════════════════════════════════════════
+   EXPORT — PDF (print dialog)
+═══════════════════════════════════════════════ */
+function exportPDF() {
+  // Build a clean print-friendly window
+  const allTotals = S.years.map(getTotals);
+  const gI = allTotals.reduce((s,t)=>s+t.inc,0);
+  const gE = allTotals.reduce((s,t)=>s+t.exp,0);
+  const gB = gI - gE;
+
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Financial Planner — Shamsudeen EP</title>
+  <style>
+    body { font-family: Georgia, serif; color: #1a2540; margin: 2cm; font-size: 12pt; }
+    h1 { font-size: 22pt; margin-bottom: 4px; }
+    h2 { font-size: 14pt; margin: 18px 0 6px; border-bottom: 2px solid #2b6cb0; padding-bottom: 4px; color: #2b6cb0; }
+    h3 { font-size: 11pt; margin: 12px 0 4px; color: #3d5170; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+    th { background: #ebf4ff; padding: 6px 10px; text-align: left; font-size: 10pt; }
+    td { padding: 5px 10px; border-bottom: 1px solid #d1dce9; font-size: 10pt; }
+    .inc { color: #0ea472; } .exp { color: #e03d3d; } .blu { color: #2b6cb0; }
+    .total-row td { font-weight: bold; background: #f0f4f8; border-top: 2px solid #2b6cb0; }
+    .footer { margin-top: 30px; text-align: center; color: #7a90b0; font-size: 9pt; }
+    .year-block { page-break-inside: avoid; }
+  </style></head><body>
+  <h1>Financial Planner</h1>
+  <p style="color:#7a90b0;margin-bottom:20px">Generated on ${new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'long',year:'numeric'})}</p>
+
+  <h2>Overall Summary</h2>
+  <table><thead><tr><th>Year</th><th>Income</th><th>Expenses</th><th>Balance</th></tr></thead><tbody>`;
+
+  S.years.forEach((y,i) => {
+    const { inc, exp, bal } = allTotals[i];
+    const bc = bal>=0 ? '#0ea472' : '#e03d3d';
+    html += `<tr><td>${y.name}</td><td class="inc">${fmt(inc)}</td><td class="exp">${fmt(exp)}</td><td style="color:${bc};font-weight:700">${fmt(bal)}</td></tr>`;
+  });
+
+  const gbc = gB>=0 ? '#0ea472' : '#e03d3d';
+  html += `</tbody><tfoot><tr class="total-row"><td>GRAND TOTAL</td><td class="inc">${fmt(gI)}</td><td class="exp">${fmt(gE)}</td><td style="color:${gbc}">${fmt(gB)}</td></tr></tfoot></table>`;
+
+  S.years.forEach(y => {
+    const { inc, exp, bal } = getTotals(y);
+    const bc = bal>=0 ? '#0ea472' : '#e03d3d';
+    html += `<div class="year-block"><h2>${y.name}</h2>
+    <table><thead><tr><th>Type</th><th>Name</th><th>Amount</th></tr></thead><tbody>`;
+    y.income.forEach(e   => html += `<tr><td class="inc">Income</td><td>${e.name}</td><td class="inc">${fmt(e.amount)}</td></tr>`);
+    y.expenses.forEach(e => html += `<tr><td class="exp">Expense</td><td>${e.name}</td><td class="exp">${fmt(e.amount)}</td></tr>`);
+    html += `</tbody><tfoot><tr class="total-row">
+      <td colspan="2">Balance</td>
+      <td style="color:${bc}">${fmt(bal)} &nbsp;(Income ${fmt(inc)} − Expenses ${fmt(exp)})</td>
+    </tr></tfoot></table></div>`;
+  });
+
+  html += `<div class="footer"><strong>Financial Planner</strong> &nbsp;·&nbsp; Developed &amp; Designed by <strong>Shamsudeen EP</strong></div>
+  </body></html>`;
+
+  const w = window.open('','_blank','width=900,height=700');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 600);
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER TABS
+═══════════════════════════════════════════════ */
+function renderTabs() {
+  const row = document.getElementById('yearTabs');
+  const addBtn = row.querySelector('.btn-add-year');
+  row.innerHTML = '';
+
+  S.years.forEach((y, i) => {
+    const { bal } = getTotals(y);
+    const balColor = bal >= 0 ? 'var(--green)' : 'var(--red)';
+    const btn = document.createElement('button');
+    btn.className = 'year-tab' + (i===S.activeYear ? ' active' : '');
+    btn.innerHTML = `
+      <div class="tab-top">
+        <span>${y.name}</span>
+        <span class="tab-delete" title="Delete">✕</span>
+      </div>
+      <div class="tab-balance" style="color:${balColor}">${fmt(bal)}</div>
+    `;
+    btn.querySelector('.tab-delete').addEventListener('click', ev => deleteYear(i, ev));
+    btn.addEventListener('click', () => { S.activeYear = i; renderAll(); });
+    row.appendChild(btn);
+  });
+
+  row.appendChild(addBtn);
+
+  // Rename input
+  document.getElementById('yearNameInput').value = S.years[S.activeYear].name;
+
+  // Copy-from select
+  const sel = document.getElementById('copyFrom');
+  sel.innerHTML = '<option value="">— select year —</option>';
+  S.years.forEach((y,i) => {
+    if (i !== S.activeYear) sel.innerHTML += `<option value="${i}">${y.name}</option>`;
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER ENTRIES
+═══════════════════════════════════════════════ */
+function renderEntries(type) {
+  const yr  = S.years[S.activeYear];
+  const arr = type==='income' ? yr.income : yr.expenses;
+  const el  = document.getElementById(type==='income' ? 'incomeEntries' : 'expenseEntries');
+  if (!arr.length) {
+    el.innerHTML = `<div class="empty-hint">No ${type} entries yet.<br>Add one below.</div>`;
+    return;
+  }
+  el.innerHTML = arr.map((e,i) => `
+    <div class="entry-row">
+      <div class="entry-name" title="${e.name}">${e.name}</div>
+      <div class="entry-amt ${type==='income'?'amt-inc':'amt-exp'}">${fmt(e.amount)}</div>
+      <button class="btn-del" onclick="removeEntry('${type}',${i})" title="Remove">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M11 3H9.5V2A1.5 1.5 0 008 .5H6A1.5 1.5 0 004.5 2v1H3a.5.5 0 000 1h.5v7.5A1.5 1.5 0 005.5 13h3A1.5 1.5 0 0010 11.5V4h.5a.5.5 0 000-1H11zm-5.5-1A.5.5 0 016 1.5h2a.5.5 0 01.5.5v1h-3V2zM9 11.5a.5.5 0 01-.5.5h-3a.5.5 0 01-.5-.5V4h4v7.5z"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER SUMMARY CARDS
+═══════════════════════════════════════════════ */
+function renderSummary() {
+  const { inc, exp, bal } = getTotals(S.years[S.activeYear]);
+  document.getElementById('sumIncome').textContent   = fmt(inc);
+  document.getElementById('totalIncome').textContent  = fmt(inc);
+  document.getElementById('sumExpense').textContent   = fmt(exp);
+  document.getElementById('totalExpense').textContent = fmt(exp);
+  const balEl = document.getElementById('sumBalance');
+  balEl.textContent = fmt(bal);
+  balEl.style.color = bal >= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER OVERVIEW
+═══════════════════════════════════════════════ */
+function renderOverview() {
+  const all    = S.years.map(getTotals);
+  const n      = S.years.length;
+  const maxBal = Math.max(...all.map(t=>Math.abs(t.bal)), 1);
+  const maxVal = Math.max(...all.flatMap(t=>[t.inc, t.exp]), 1);
+  const chartH = 165;
+
+  document.getElementById('overviewTitle').textContent = `${n}-Year Overview`;
+  document.getElementById('totalLabel').textContent    = `${n}-Year Total`;
+
+  // Table rows
+  document.getElementById('overviewBody').innerHTML = all.map((t,i) => {
+    const bc = t.bal >= 0 ? 'var(--green)' : 'var(--red)';
+    return `<tr>
+      <td style="color:${yearColor(i)};font-weight:800">${S.years[i].name}</td>
+      <td style="color:var(--green)">${fmt(t.inc)}</td>
+      <td style="color:var(--red)">${fmt(t.exp)}</td>
+      <td style="color:${bc};font-weight:700">${fmt(t.bal)}</td>
+      <td>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${Math.abs(t.bal)/maxBal*100}%;background:${bc}"></div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Footer totals
+  const gI = all.reduce((s,t)=>s+t.inc,0);
+  const gE = all.reduce((s,t)=>s+t.exp,0);
+  const gB = gI - gE;
+  document.getElementById('grandIncome').textContent  = fmt(gI);
+  document.getElementById('grandExpense').textContent = fmt(gE);
+  const gb = document.getElementById('grandBalance');
+  gb.textContent = fmt(gB);
+  gb.style.color = gB >= 0 ? 'var(--green)' : 'var(--red)';
+
+  // Bar chart
+  const chart = document.getElementById('chartArea');
+  chart.innerHTML = '';
+  all.forEach((t,i) => {
+    const iH = Math.max(Math.round(t.inc/maxVal*chartH), t.inc>0?3:0);
+    const eH = Math.max(Math.round(t.exp/maxVal*chartH), t.exp>0?3:0);
+    const g = document.createElement('div');
+    g.className = 'cg';
+    g.innerHTML = `
+      <div class="cbars">
+        <div class="cbw"><div class="cb" style="height:${iH}px;background:var(--green);opacity:0.88" title="${S.years[i].name} Income: ${fmt(t.inc)}"></div></div>
+        <div class="cbw"><div class="cb" style="height:${eH}px;background:var(--red);opacity:0.85"   title="${S.years[i].name} Expenses: ${fmt(t.exp)}"></div></div>
+      </div>
+      <div class="cy-lbl" style="color:${yearColor(i)}">${S.years[i].name}</div>
+    `;
+    chart.appendChild(g);
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER ALL
+═══════════════════════════════════════════════ */
+function renderAll() {
+  renderTabs();
+  renderEntries('income');
+  renderEntries('expense');
+  renderSummary();
+  renderOverview();
+}
+
+/* ═══════════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+═══════════════════════════════════════════════ */
+['incomeName','incomeAmount'].forEach(id =>
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key==='Enter') addEntry('income'); }));
+['expenseName','expenseAmount'].forEach(id =>
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key==='Enter') addEntry('expense'); }));
+
+// Close modal on backdrop click
+document.getElementById('clearModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+/* ── Init ── */
+renderAll();
+</script>
+</body>
+</html>
